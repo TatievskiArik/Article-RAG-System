@@ -44,7 +44,8 @@ def get_llm_response(prompt: str, articles: list[str]):
             - Ignore navigation, repeated menu items, or language switchers.
             - When summarizing, extracting key topics, or analyzing sentiment, make your reasoning transparent and cite the relevant articles.
             - You MUST return your response in MD format with clear headings and bullet points where appropriate.
-            - If the question is not answerable with the provided articles, respond with "I don't have enough information to answer that question."
+            - If the question is not answerable with the provided articles, respond with a response relavent to the question but state that the information is not available in the provided articles or tell him your job if the question is irrlevant to your job.
+            - Your only exception is if the question is a greeting or a simple "hello" - in that case, respond with a friendly greeting.
 
             Articles:
             {context}
