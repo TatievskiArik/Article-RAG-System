@@ -24,9 +24,41 @@ A Retrieval-Augmented Generation (RAG) API for interactive analysis and conversa
 - Python 3.8+
 - pip
 
-### Installation
+### Installation & Setup
 
 1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/TatievskiArik/Article-RAG-System
-   cd rag-article-chatbot
+    ```sh
+    git clone https://github.com/TatievskiArik/Article-RAG-System.git
+    cd rag-article-chatbot
+    pip install -r requirements.txt
+    ```
+
+2. **Environment Variables:**
+   - In the project root, create a `.env` file with the following variables (replace values as needed):
+
+     ```
+     DATA_DIR=./data
+     DB_PATH=./vectorDB.json
+     AZURE_OPENAI_API_KEY=your-azure-openai-api-key
+     AZURE_OPENAI_ENDPOINT=your-azure-openai-endpoint
+     AZURE_OPENAI_CHAT_DEPLOYMENT_NAME=your-chat-deployment-name
+     AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=your-embedding-deployment-name
+     AZURE_OPENAI_API_VERSION=2024-XX-XX
+     ```
+
+3. **Run the API:**
+    ```sh
+    uvicorn app:app --reload
+    ```
+
+---
+
+## Improvements & Recommendations
+
+**File I/O and Concurrency**
+- **Atomic Writes:** Use atomic file writes to avoid corruption if multiple requests hit at once.
+- **Thread Safety:** Consider using a database (SQLite, PostgreSQL) for concurrent access instead of JSON files.
+
+**Performance**
+- **Vector Search:** For larger datasets, use a vector database (e.g., FAISS, Pinecone) instead of iterating over JSON.
+- **Batch Processing:** If you expect bulk article ingestion, process in batches.

@@ -1,5 +1,6 @@
 import os
 from openai import AzureOpenAI
+import logging
 
 # AZURE_OPENAI_API_VERSION = "2024-02-01"
 api_key = os.getenv("AZURE_OPENAI_API_KEY")
@@ -15,6 +16,7 @@ client = AzureOpenAI(
 )
 
 def get_embedding(text: str):
+    # Embedding the text using Azure OpenAI
     response = client.embeddings.create(
         input=[text],
         model=deployment_name_embedding
@@ -22,6 +24,7 @@ def get_embedding(text: str):
     return response.data[0].embedding, response.usage.total_tokens
 
 def get_llm_response(prompt: str, articles: list[str]):
+    # Create context from articles
     context =""
     for idx, art in enumerate(articles):
         context += (
@@ -29,7 +32,7 @@ def get_llm_response(prompt: str, articles: list[str]):
             f"Title: {art['title']}\n"
             f"Content:\n{art['content']}\n\n"
         )
-    print(context)
+    # Generate system message for the LLM
     system_msg = f"""
             You are an AI assistant for articles and research analysis, operating as part of a Retrieval-Augmented Generation (RAG) system.
             You are provided with one or more articles, each with a title, URL, and content.
@@ -49,12 +52,13 @@ def get_llm_response(prompt: str, articles: list[str]):
     messages = [{"role": "system", "content": system_msg},
                 {"role": "user", "content": prompt}]
     try:
+        # Sending the query to the LLM
         response = client.chat.completions.create(
             model=deployment_name_llm,
             messages=messages,
-            max_tokens=300
+            max_tokens=1000
         )
         return response.choices[0].message.content.strip(), response.usage.total_tokens
     except Exception as e:
-        print(f"Error in LLM response: {str(e)}")
+        logging.error(f"Error in LLM response: {str(e)}")
         raise
