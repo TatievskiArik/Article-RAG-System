@@ -2,11 +2,28 @@
 
 A Retrieval-Augmented Generation (RAG) API for interactive analysis and conversation with a dynamic collection of news articles. Users can ingest new articles by URL and ask questions, request summaries, extract topics, analyze sentiment, and compare content across sources—all in natural language.
 
+---
+
+## About This Project
+
+- **Modern Python API development** with FastAPI and async programming for high concurrency.
+- **Robust data handling** with atomic file operations and concurrency-safe mechanisms.
+- **Integration with Azure OpenAI** for embeddings and LLM-powered responses.
+- **Vector search and chunking** for scalable retrieval-augmented generation.
+- **Containerization** for easy deployment and reproducibility.
+
+---
+
 ## Features
 
 - **Article Ingestion:** Add articles by URL and store their content and embeddings.
 - **Article Listing:** Retrieve a list of all ingested articles.
 - **AI Query:** Ask questions about the articles, get summaries, extract topics, analyze sentiment, and compare content using LLM-powered responses.
+- **Async Endpoints:** All endpoints are fully async for maximum performance.
+- **Atomic & Safe Writes:** Vector DB writes are locked to prevent race conditions.
+- **Dockerized:** Ready for deployment in any environment.
+
+---
 
 ## Endpoints
 
@@ -16,6 +33,8 @@ A Retrieval-Augmented Generation (RAG) API for interactive analysis and conversa
 | GET    | `/articles/list`    | List all ingested articles                  |
 | POST   | `/articles/add`     | Add a new article by URL                    |
 | POST   | `/ai/query`         | Query the AI about the articles             |
+
+---
 
 ## Getting Started
 
@@ -53,12 +72,43 @@ A Retrieval-Augmented Generation (RAG) API for interactive analysis and conversa
 
 ---
 
-## Improvements & Recommendations
+## Docker Deployment
+
+You can run the Article RAG Chatbot API in a container using Docker.
+
+### Build the Docker image
+
+```sh
+docker build -t rag-article-chatbot .
+```
+
+### Run the container
+
+```sh
+docker run -p 8000:8000 --env-file .env rag-article-chatbot
+```
+
+This will start the API server at `http://localhost:8000`.
+
+**Note:**  
+- Make sure your `.env` file is present in the project root and contains all required environment variables.
+- You can run tests inside the container by adding `pytest` to your requirements and running:
+  ```sh
+  docker run --env-file .env rag-article-chatbot pytest
+  ```
+
+---
+
+## 🛠️ Improvements & Recommendations
 
 **File I/O and Concurrency**
-- **Atomic Writes:** Use atomic file writes to avoid corruption if multiple requests hit at once.
 - **Thread Safety:** Consider using a database (SQLite, PostgreSQL) for concurrent access instead of JSON files.
 
 **Performance**
 - **Vector Search:** For larger datasets, use a vector database (e.g., FAISS, Pinecone) instead of iterating over JSON.
 - **Batch Processing:** If you expect bulk article ingestion, process in batches.
+
+**AI & Backend Engineering**
+- **Advanced Prompt Engineering:** Custom system prompts for precise LLM behavior.
+- **Chunked Context Management:** Efficient handling of large articles for embedding and retrieval.
+- **Extensible Design:** Easily add new endpoints, AI features, or swap out vector/LLM providers.

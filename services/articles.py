@@ -33,7 +33,8 @@ async def get_page_data(url):
         logging.error(f"Error fetching data from {url}: {e}")
         raise
 
-async def save_as_json(data, path):
+async def save_as_json(data):
+    path = os.getenv("DATA_DIR")
     filename = f"{data['uid']}.json"
     try:
         path = os.path.join(path, filename)
@@ -61,7 +62,6 @@ async def add_article(url):
 
 async def add_article_to_db(embedding, article):
     db_path = os.getenv("DB_PATH")
-    data_dir = os.getenv("DATA_DIR")
     lock = FileLock(LOCK_PATH)
 
     try:
@@ -90,8 +90,6 @@ async def add_article_to_db(embedding, article):
     except Exception as e:
         logging.error(f"Error during locked access to vector DB: {e}")
         raise
-
-    await save_as_json(article, data_dir)
 
 async def list_articles():
     data_dir = os.getenv("DATA_DIR")

@@ -3,6 +3,10 @@ import json
 import numpy as np
 import aiofiles
 from filelock import FileLock
+import tiktoken
+
+CHUNK_SIZE=600
+CHUNK_OVERLAP=120
 
 # Cosine similarity (common in NLP)
 def cosine_similarity(vec1, vec2):
@@ -38,4 +42,16 @@ async def ai_search(query_embedding):
         })
 
     scored.sort(key=lambda x: x["score"], reverse=True)
-    return scored[:3]
+    return scored[:5]
+
+def chunk_text_by_tokens(text):
+    enc = tiktoken.encoding_for_model("text-embedding-ada-002")
+    tokens = enc.encode(text)
+    chunks = []
+    start = 0
+    while start < len(tokens):
+        end = start + CHUNK_SIZE
+        chunk = enc.decode(tokens[start:end])
+        chunks.append(chunk)
+        start += CHUNK_SIZE - CHUNK_OVERLAP
+    return chunks

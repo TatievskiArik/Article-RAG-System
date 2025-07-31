@@ -8,8 +8,8 @@ from fastapi.responses import JSONResponse
 from models import *
 # Backend imports
 from services.llm_client import get_embedding, get_llm_response
-from services.vectors import ai_search
-from services.articles import add_article, add_article_to_db, list_articles
+from services.vectors import ai_search, chunk_text_by_tokens
+from services.articles import add_article, add_article_to_db, list_articles, save_as_json
 # Auditing and performance imports
 import logging
 import time
@@ -70,16 +70,21 @@ async def post_article(article: ArticleAddRequest):
                 content={"message": "Article already exists."},
                 status_code=status.HTTP_208_ALREADY_REPORTED
             )
-        start_time = time.time()
-        text_embedding = await get_embedding(new_article['content'])
-        end_time = time.time()
-        logging.info(f"Time taken for embedding: {end_time - start_time} seconds")
-        logging.info(f"Embedding for article {new_article['title']} completed. Usage: {text_embedding[1]} tokens")
-        await add_article_to_db(text_embedding[0], new_article)
+
+        await save_as_json(new_article)  # Save full article first
+        # Chunk article content
+        chunks = chunk_text_by_tokens(new_article["content"])
+        for i, chunk in enumerate(chunks):
+            chunked_article = {**new_article, "content": chunk}
+            chunked_article["chunk_index"] = i
+            embedding, usage = await get_embedding(chunk)
+            logging.info(f"Chunk {i} embedding usage: {usage} tokens")
+            await add_article_to_db(embedding, chunked_article)
         return JSONResponse(
             content={"article": new_article},
             status_code=status.HTTP_201_CREATED
         )
+
     except Exception as e:
         return JSONResponse(
             content={"error": f"Failed to add article: {str(e)}"},
