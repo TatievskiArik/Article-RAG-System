@@ -109,6 +109,4 @@ This will start the API server at `http://localhost:8000`.
 - **Batch Processing:** If you expect bulk article ingestion, process in batches.
 
 **AI & Backend Engineering**
-- **Advanced Prompt Engineering:** Custom system prompts for precise LLM behavior.
-- **Chunked Context Management:** Efficient handling of large articles for embedding and retrieval.
 - **Extensible Design:** Easily add new endpoints, AI features, or swap out vector/LLM providers.
