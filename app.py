@@ -39,7 +39,7 @@ logging.info("FastAPI server started with CORS enabled for all origins.")
 
 ### Endpoint for healthcheck ###
 @app.get("/", response_model=RootResponse)
-def root():
+async def root():
     return JSONResponse(
         content={"status": "API is running", "app_name": "Article RAG Chatbot",
                  "version": "1.0", "description": "A Retrieval-Augmented Generation (RAG) API for interactive analysis and conversation with a dynamic collection of news articles."},
@@ -48,9 +48,9 @@ def root():
 
 ### Endpoints for article management ###
 @app.get("/articles/list", response_model=ArticlesListResponse, responses={500: {"model": ErrorResponse}})
-def get_articles():
+async def get_articles():
     try:
-        articles = list_articles()
+        articles = await list_articles()
         return JSONResponse(
             content={"articles": articles},
             status_code=status.HTTP_200_OK
@@ -62,20 +62,20 @@ def get_articles():
         )
 
 @app.post("/articles/add", response_model=ArticleAddResponse, responses={200: {"model": MessageResponse}, 500: {"model": ErrorResponse}})
-def post_article(article: ArticleAddRequest):
+async def post_article(article: ArticleAddRequest):
     try:
-        new_article = add_article(article.url)
+        new_article = await add_article(article.url)
         if not new_article:
             return JSONResponse(
                 content={"message": "Article already exists."},
                 status_code=status.HTTP_208_ALREADY_REPORTED
             )
         start_time = time.time()
-        text_embedding = get_embedding(new_article['content'])
+        text_embedding = await get_embedding(new_article['content'])
         end_time = time.time()
         logging.info(f"Time taken for embedding: {end_time - start_time} seconds")
         logging.info(f"Embedding for article {new_article['title']} completed. Usage: {text_embedding[1]} tokens")
-        add_article_to_db(text_embedding[0], new_article)
+        await add_article_to_db(text_embedding[0], new_article)
         return JSONResponse(
             content={"article": new_article},
             status_code=status.HTTP_201_CREATED
@@ -88,15 +88,18 @@ def post_article(article: ArticleAddRequest):
 
 ### Endpoints for AI services ###
 @app.post("/ai/query", response_model=AIQueryResponse, responses={500: {"model": ErrorResponse}})
-def query_ai(text: PromptToLLM):
+async def query_ai(text: PromptToLLM):
+    if (not text.query) or (text.query.strip() == ""):
+        return JSONResponse(
+            content={"error": "Query text cannot be empty."},
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
     try:
-        # Embedding the query & Context retrieval
-        embedding = get_embedding(text.query)
-        context = ai_search(embedding[0])
+        embedding = await get_embedding(text.query)
+        context = await ai_search(embedding[0])
         articles_context = [r["article"] for r in context]
         start_time = time.time()
-        # Sending the query to the LLM
-        llm_response = get_llm_response(text.query, articles_context)
+        llm_response = await get_llm_response(text.query, articles_context)
         end_time = time.time()
         logging.info(f"LLM response time: {end_time - start_time} seconds")
         logging.info(f"LLM response usage: {llm_response[1]} tokens")   
@@ -113,4 +116,3 @@ def query_ai(text: PromptToLLM):
             content={"error": f"Failed to query: {str(e)}"},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-        

@@ -1,6 +1,7 @@
 import os
 import json
 import numpy as np
+import aiofiles
 
 # Most NLP embeddings
 def cosine_similarity(vec1, vec2):
@@ -13,11 +14,11 @@ def euclidean_distance(vec1, vec2):
     v2 = np.array(vec2)
     return float(np.linalg.norm(v1 - v2))
 
-def ai_search(query_embedding):
+async def ai_search(query_embedding):
     # Get Vector DB
     db_path = os.getenv("DB_PATH")
-    with open(db_path, "r", encoding="utf-8") as f:
-        db = json.load(f)
+    async with aiofiles.open(db_path, "r", encoding="utf-8") as f:
+        db = json.loads(await f.read())
     scored = []
     for record in db:
         embedding = record["embedding"]

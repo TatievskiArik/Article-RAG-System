@@ -15,7 +15,7 @@ client = AzureOpenAI(
     api_version=api_version,
 )
 
-def get_embedding(text: str):
+async def get_embedding(text: str):
     # Embedding the text using Azure OpenAI
     response = client.embeddings.create(
         input=[text],
@@ -23,7 +23,7 @@ def get_embedding(text: str):
     )
     return response.data[0].embedding, response.usage.total_tokens
 
-def get_llm_response(prompt: str, articles: list[str]):
+async def get_llm_response(prompt: str, articles: list[str]):
     # Create context from articles
     context =""
     for idx, art in enumerate(articles):
